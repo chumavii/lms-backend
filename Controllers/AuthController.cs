@@ -1,6 +1,7 @@
 ﻿using LmsApi.Data;
-using LmsApi.DTOs;
 using LmsApi.Models;
+using LmsApi.Models.DTOs;
+using LmsApi.Models.Enums;
 using LmsApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -24,7 +25,7 @@ namespace LmsApi.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
             if (!ModelState.IsValid)
-                return BadRequest();
+                return BadRequest(ModelState);
 
             var isInstructor = model.Role == "Instructor";
             var user = new ApplicationUser
@@ -47,6 +48,19 @@ namespace LmsApi.Controllers
             if (!await _userManager.IsInRoleAsync(user, model.Role))
                 await _userManager.AddToRoleAsync(user, model.Role);
 
+            if (isInstructor)
+            {
+                var approvalRequest = new InstructorApprovalRequest
+                {
+                    User = user,
+                    UserId = user.Id,
+                    Status = ApprovalStatus.Pending,
+                    RequestedAt = DateTime.UtcNow
+                };
+                _context.InstructorApprovalRequests.Add(approvalRequest);
+                await _context.SaveChangesAsync();
+            }
+
             return Ok(new { message = "Registration successful" });
         }
 
@@ -62,6 +76,10 @@ namespace LmsApi.Controllers
                 return Unauthorized("Invalid credentials");
 
             var roles = await _userManager.GetRolesAsync(user);
+
+            if (roles.Contains("Instructor") && user.IsApproved == false)
+                return Unauthorized("Instructor accounts require admin approval!");
+
             var token = _tokenService.CreateToken(user, roles);
 
             return Ok(new { Token = token });
@@ -93,6 +111,7 @@ namespace LmsApi.Controllers
                     Id = user.Id,
                     FullName = user.FullName,
                     Email = user.Email ?? "",
+                    IsApproved = user.IsApproved,
                     Roles = roles.ToList()
                 });
             }
