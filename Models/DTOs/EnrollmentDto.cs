@@ -9,5 +9,7 @@
         public string? Title { get; set; }
         public int Progress { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string? InstructorName { get; set; }
+        public string? InstructorEmail { get; set; }
     }
 }
