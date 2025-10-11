@@ -1,7 +1,8 @@
 ﻿using System.Security.Claims;
 using LmsApi.Data;
-using LmsApi.DTOs;
 using LmsApi.Models;
+using LmsApi.Models.DTOs;
+using LmsApi.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -23,14 +24,17 @@ namespace LmsApi.Controllers
         {
             var courses = await _context.Courses
                 .Include(c => c.Instructor)
+                .Where(c => c.Status == CourseStatus.Published)
                 .Select(c => new CourseListDto
                 {
                     Id = c.Id,
                     Title = c.Title,
                     Description = c.Description,
                     InstructorName = c.Instructor != null ? c.Instructor.FullName : null,
-                    InstructorEmail = c.Instructor != null ? c.Instructor.Email : null
+                    InstructorEmail = c.Instructor != null ? c.Instructor.Email : null,
+                    Status = c.Status
                 }).ToListAsync();
+
             return Ok(courses);
         }
 
@@ -48,7 +52,8 @@ namespace LmsApi.Controllers
                 Title = course.Title,
                 Description = course.Description,
                 InstructorName = course.Instructor?.FullName,
-                InstructorEmail = course.Instructor?.Email
+                InstructorEmail = course.Instructor?.Email,
+                Status = course.Status
             };
             return Ok(courseDto);
         }
@@ -60,8 +65,10 @@ namespace LmsApi.Controllers
         /// <returns>Created course details.</returns>
         [HttpPost]
         [Authorize(Roles = "Admin,Instructor")]
-        [ProducesResponseType(typeof(Course), 200)]
-        [ProducesResponseType(401)]
+        [ProducesResponseType(typeof(CreateCourseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CreateCourseDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateCourse([FromBody] CreateCourseDto model)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -72,13 +79,75 @@ namespace LmsApi.Controllers
             {
                 Title = model.Title,
                 Description = model.Description,
-                InstructorId = userId
+                InstructorId = userId,
+                Status = CourseStatus.Published
             };
             
             _context.Courses.Add(course);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetCourse), new { id = course.Id }, course); ;
+
+            var instructor = await _context.Users.FindAsync(userId);
+            var response = new CreateCourseResponseDto
+            {
+                Title = model.Title,
+                Description = model.Description,
+                InstructorName = instructor?.FullName ?? string.Empty,
+                InstructorEmail = instructor?.Email ?? string.Empty,
+            };
+
+            return CreatedAtAction(nameof(GetCourse), new { id = course.Id }, response);
         }
+
+
+        [HttpPut("publish/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> PublishCourse(int id)
+        {
+            var course = await _context.Courses.FindAsync(id);
+            if (course == null)
+                return NotFound(new { message = "Course not found!" });
+
+            course.Status = CourseStatus.Published;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Course published successfully" });
+        }
+
+
+        [HttpPut("reassign/")]
+        [Authorize(Roles ="Admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> ReassignCourse(ReassignCourseDto model)
+        {
+            var course = await _context.Courses.FindAsync(model.CourseId);
+            if (course == null)
+                return NotFound(new { message = "Course not found" });
+
+            var newInstructor = await _context.Users.FindAsync(model.InstructorId);
+            if (newInstructor == null)
+                return NotFound(new { message = "Instructor not found" });
+
+            var isInstructor = await _userManager.IsInRoleAsync(newInstructor, "Instructor");
+            if (!isInstructor)
+                return BadRequest(new { message = "User is not an Instructor" });
+
+            course.InstructorId = newInstructor.Id;
+            course.Instructor = newInstructor;
+            await _context.SaveChangesAsync();
+
+            var response = new ReassignCourseResponseDto
+            {
+                CourseId = course.Id,
+                InstructorId = newInstructor.Id,
+                InstructorName = newInstructor.FullName
+            };
+
+            return Ok(response);
+        }
+
+
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Instructor")]
@@ -93,6 +162,9 @@ namespace LmsApi.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+
+
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]

@@ -1,4 +1,4 @@
-﻿namespace LmsApi.DTOs
+﻿namespace LmsApi.Models.DTOs
 {
     public class LoginDto
     {

@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using LmsApi.Models.Enums;
+using System.ComponentModel.DataAnnotations;
 
-namespace LmsApi.DTOs
+namespace LmsApi.Models.DTOs
 {
     public class CreateCourseDto
     {
