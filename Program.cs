@@ -42,6 +42,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddTransient<EmailService>();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();

@@ -8,18 +8,21 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace LmsApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController (ApplicationDbContext context, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager, TokenService tokenService) : ControllerBase
+    public class AuthController (ApplicationDbContext context, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager, TokenService tokenService, EmailService emailService, IConfiguration config) : ControllerBase
     {
         private readonly ApplicationDbContext _context = context;
         private readonly UserManager<ApplicationUser> _userManager = userManager;
         private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
         private readonly RoleManager<IdentityRole> _roleManager = roleManager;
         private readonly TokenService _tokenService = tokenService;
+        private readonly EmailService _emailService = emailService;
+        private readonly IConfiguration _config = config;
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
@@ -61,7 +64,23 @@ namespace LmsApi.Controllers
                 await _context.SaveChangesAsync();
             }
 
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var confirmationLink = Url.Action(nameof(ConfirmEmail), "Auth",
+                new { userId = user.Id, token }, Request.Scheme);
+
+            await _emailService.SendEmail(user.Email, "Confirm your Upskeel account", $"Click here to confirm: {confirmationLink}");
+
             return Ok(new { message = "Registration successful" });
+        }
+
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return BadRequest("Invalid User");
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            return result.Succeeded ? Ok("Email confirmed") : BadRequest("Email confirmation failed");
         }
 
         [HttpPost("login")]
@@ -84,6 +103,59 @@ namespace LmsApi.Controllers
 
             return Ok(new { Token = token });
         }
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<ActionResult<UserDto>> GetCurrentUser()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null) return Unauthorized();
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return NotFound();
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var userDto = new UserDto
+            {
+                FullName = user.FullName,
+                Email = user.Email ?? string.Empty,
+                Roles = roles.ToList()
+            };
+
+            return Ok(userDto);
+        }
+
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null) return BadRequest("Invalid Email");
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var frontendUrl = _config["FrontEnd:Url"];
+            var resetLink = $"{frontendUrl}/reset-password?userId={user.Id}&token={Uri.EscapeDataString(token)}";
+
+            await _emailService.SendEmail(user.Email ?? model.Email, "Reset your LMS password", $"Click here to reset: {resetLink}");
+
+            return Ok("Password reset link has been sent to your email.");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null) return BadRequest("Invalid User");
+
+            var decodedToken = Uri.UnescapeDataString(model.Token);
+
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
+            return result.Succeeded ? Ok("Password reset successful") : BadRequest("Password reset failed");
+        }
+
+
+
 
         [HttpGet("users")]
         [Authorize(Roles = "Admin")]

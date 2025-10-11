@@ -59,7 +59,7 @@ namespace LmsApi.Controllers
                 CreatedAt = enrollment.CreatedAt
             };
 
-            return Ok(response);
+            return CreatedAtAction(nameof(getMyEnrollment), new { id = enrollment.Id }, response);
 
         }
         
@@ -101,6 +101,8 @@ namespace LmsApi.Controllers
             var course = await _context.Courses
                 .FirstOrDefaultAsync(c => c.Id == courseId && c.InstructorId == instructorId);
 
+            if (course == null) return NotFound("Course not found or you do not own it");
+
             var enrollments = await _context.Enrollments
                 .Include(c => c.User)
                 .Where(c => c.CourseId == courseId)
@@ -136,8 +138,8 @@ namespace LmsApi.Controllers
                     Title = e.Course.Title,
                     Progress = e.Progress,
                     CreatedAt = e.CreatedAt,
-                    InstructorName = e.Course.Instructor.FullName,
-                    InstructorEmail = e.Course.Instructor.Email
+                    InstructorName = e.Course.Instructor != null ? e.Course.Instructor.FullName : string.Empty,
+                    InstructorEmail = e.Course.Instructor != null ? e.Course.Instructor.Email : string.Empty
                 })
                 .ToListAsync();
 
