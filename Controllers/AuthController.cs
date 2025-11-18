@@ -24,7 +24,13 @@ namespace LmsApi.Controllers
         private readonly EmailService _emailService = emailService;
         private readonly IConfiguration _config = config;
 
+        /// <summary>
+        /// Registers a new user with the specified details and assigns the appropriate role.
+        /// </summary>
+        /// <param name="model">The registration details provided by the user, including email, password, full name, and role.</param>
         [HttpPost("register")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
             if (!ModelState.IsValid)
@@ -74,7 +80,14 @@ namespace LmsApi.Controllers
             return Ok(new { message = "Registration successful" });
         }
 
+        /// <summary>
+        /// Confirms the email address of a user based on the provided user ID and confirmation token.
+        /// </summary>
+        /// <param name="userId">The unique identifier of the user whose email address is being confirmed.</param>
+        /// <param name="token">The email confirmation token issued for the user.</param>
         [HttpGet("confirm-email")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -84,7 +97,13 @@ namespace LmsApi.Controllers
             return result.Succeeded ? Ok("Email confirmed") : BadRequest("Email confirmation failed");
         }
 
+        /// <summary>
+        /// Authenticates a user based on the provided login credentials.
+        /// </summary>
         [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Login(LoginDto model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
@@ -105,8 +124,15 @@ namespace LmsApi.Controllers
             return Ok(new { Token = token });
         }
 
+        /// <summary>
+        /// Retrieves the currently authenticated user's details.
+        /// </summary>
+        /// <remarks>This method returns information about the currently authenticated user, including
+        /// their full name, email, and roles.  The user must be authenticated to access this endpoint.</remarks>
         [HttpGet("me")]
         [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -127,8 +153,13 @@ namespace LmsApi.Controllers
             return Ok(userDto);
         }
 
-
+        /// <summary>
+        /// Initiates the password reset process by generating a reset token and sending a reset link to the user's
+        /// email address.
+        /// </summary>
         [HttpPost("forgot-password")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
@@ -143,6 +174,9 @@ namespace LmsApi.Controllers
             return Ok("Password reset link has been sent to your email.");
         }
 
+        /// <summary>
+        /// Resets the password for a user based on the provided token and new password.
+        /// </summary>
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
         {
@@ -157,9 +191,17 @@ namespace LmsApi.Controllers
 
 
 
-
+        /// <summary>
+        /// Retrieves a list of all users along with their roles and other details.
+        /// </summary>
+        /// <remarks>This method is accessible only to users with the "Admin" role. It returns a
+        /// collection of user details, including their ID, full name, email, approval status, and assigned roles. If
+        /// the current user is not authenticated or does not have the "Admin" role, the method will return an
+        /// appropriate HTTP status code (e.g., 401 Unauthorized or 403 Forbidden).</remarks>
         [HttpGet("users")]
         [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetUsers()
         {
             var currentUser = await _userManager.GetUserAsync(User);

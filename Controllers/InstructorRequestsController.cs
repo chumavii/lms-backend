@@ -16,8 +16,13 @@ namespace LmsApi.Controllers
         private readonly ApplicationDbContext _context = context;
         private readonly UserManager<ApplicationUser> _userManager = userManager;
 
+        /// <summary>
+        /// Retrieves a list of instructor approval requests.
+        /// </summary>
         [HttpGet]
         [Authorize(Roles = "Admin")]
+        [ProducesResponseType(typeof(InstructorRequestDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IEnumerable<InstructorRequestDto>>> GetApprovalRequests()
         {
             var approvalRequests = await _context.InstructorApprovalRequests
@@ -40,8 +45,13 @@ namespace LmsApi.Controllers
             return Ok(approvalRequests);
         }
 
+
+        /// <summary>
+        /// Approves an instructor approval request with the specified identifier.
+        /// </summary>
         [HttpPatch("{id}/approve")]
         [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> ApproveRequest(Guid id)
         {
             var request = await _context.InstructorApprovalRequests
@@ -59,8 +69,13 @@ namespace LmsApi.Controllers
             return Ok(new { message = "Request approved!" });
         }
 
+
+        /// <summary>
+        /// Rejects an instructor approval request with the specified identifier.
+        /// </summary>
         [HttpPatch("{id}/reject")]
         [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> RejectRequest(Guid id)
         {
             var request = await _context.InstructorApprovalRequests
