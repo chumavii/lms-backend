@@ -13,7 +13,7 @@
 
 **Upskeel** is a **Learning Management System (LMS)**. It provides a secure, scalable platform for course creation, student enrollment, and instructor approval workflows with role-based access control.
 
-![Upskeel Dashboard](./assets/dashboard.png)
+![Upskeel Dashboard](./assets/Dashboard.png)
 
 ---
 
