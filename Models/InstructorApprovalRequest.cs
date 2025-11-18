@@ -7,8 +7,8 @@ namespace LmsApi.Models
         public Guid Id { get; set; }
         public required string UserId { get; set; }
         public required ApplicationUser User { get; set; }
+        public required string Email { get; set; }
         public ApprovalStatus Status { get; set; } = ApprovalStatus.Pending;
-
         public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ReviewedAt { get; set; }
     }

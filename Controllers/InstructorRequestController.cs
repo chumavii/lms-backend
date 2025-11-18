@@ -28,6 +28,7 @@ namespace LmsApi.Controllers
                     Id = c.Id,
                     UserId = c.UserId,
                     FullName = c.User.FullName,
+                    Email = c.Email,
                     Status = c.Status,
                     RequestedAt = c.RequestedAt,
                     ReviewedAt = c.ReviewedAt

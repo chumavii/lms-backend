@@ -7,6 +7,7 @@ namespace LmsApi.Models.DTOs
         public Guid Id { get; set; }
         public required string UserId { get; set; }
         public string? FullName { get; set; }
+        public required string Email { get; set; }
         public ApprovalStatus Status { get; set; }
 
         public DateTime RequestedAt { get; set; }

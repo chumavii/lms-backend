@@ -121,17 +121,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-//Run migration
+//Run migration & seed roles
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate(); // <--- Add this line
-    await DbInitializer.SeedRolesAndAdminAsync(scope.ServiceProvider);
-}
-
-//Seed database
-using (var scope = app.Services.CreateScope())
-{
+    db.Database.Migrate();
     await DbInitializer.SeedRolesAndAdminAsync(scope.ServiceProvider);
 }
 
