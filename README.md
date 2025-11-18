@@ -61,7 +61,7 @@
 | **Authentication** | JWT Bearer Tokens |
 | **Authorization** | Identity Roles (Admin, Instructor, Student) |
 | **Testing** | xUnit + WebApplicationFactory |
-- **API Documentation:** Swagger/OpenAPI
+| **API Documentatio:** | Swagger/OpenAPI |
 
 
 ### Frontend
