@@ -11,16 +11,20 @@ namespace LmsApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EnrollmentController(ApplicationDbContext context, UserManager<ApplicationUser> userManager) : ControllerBase
+    public class EnrollmentsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager) : ControllerBase
     {
         private readonly ApplicationDbContext _context = context;
         private readonly UserManager<ApplicationUser> _userManager = userManager;
         
+
+        /// <summary>
+        /// Enrolls the currently authenticated user in the specified course.
+        /// </summary>
         [HttpPost("enroll/{courseId}/")]
         [Authorize(Roles = "Student")]
-        [ProducesResponseType(typeof(EnrollmentDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(EnrollmentDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<EnrollmentDto>>> enroll(int courseId)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -30,7 +34,7 @@ namespace LmsApi.Controllers
             if (user == null) return Unauthorized();
 
             var course = await _context.Courses.FindAsync(courseId);
-            if (course == null) return BadRequest(new { message = "Course not found" });
+            if (course == null) return NotFound(new { message = "Course not found" });
 
             // Check if already enrolled
             var existing = await _context.Enrollments
@@ -63,8 +67,14 @@ namespace LmsApi.Controllers
 
         }
         
+
+        /// <summary>
+        /// Retrieves the list of enrollments for the currently authenticated student.
+        /// </summary>
         [HttpGet("myenrollments/")]
         [Authorize(Roles = "Student")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> getMyEnrollment()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -90,8 +100,19 @@ namespace LmsApi.Controllers
             return Ok(enrollments);
         }
 
+
+        /// <summary>
+        /// Retrieves a list of enrollments for a specific course.  
+        /// </summary>
+        /// <remarks>This method is restricted to users with the "Instructor" role. The instructor must
+        /// own the specified course; otherwise, the method returns a 404 status code. If the instructor is not
+        /// authenticated, the method returns a 401 status code.
+        /// </remarks>
         [HttpGet("course/{courseId}")]
         [Authorize(Roles = "Instructor")]
+        [ProducesResponseType(typeof(EnrollmentDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<EnrollmentDto>>> getCourseEnrollments(int courseId)
         {
             var instructorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -122,6 +143,11 @@ namespace LmsApi.Controllers
             return Ok(enrollments);
         }
 
+
+        /// <summary>
+        /// Retrieves all enrollments in the system.
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("all")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<EnrollmentDto>>> GetAllEnrollments()

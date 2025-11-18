@@ -83,7 +83,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowedFrontend",
         policy => policy
-        .WithOrigins("http://localhost:5173", "https://lms-frontend-lime-gamma.vercel.app", "https://upskeel.vercel.app")
+        .WithOrigins("http://localhost:5173", "https://lms-frontend-lime-gamma.vercel.app", "https://upskeel.vercel.app", "http://localhost:8080")
         .AllowAnyHeader()
         .AllowAnyMethod());
 });
@@ -125,7 +125,10 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
+    var pending = db.Database.GetPendingMigrations();
+    if (pending.Any())
+        db.Database.Migrate();
+
     await DbInitializer.SeedRolesAndAdminAsync(scope.ServiceProvider);
 }
 

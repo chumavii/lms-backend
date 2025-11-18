@@ -9,6 +9,7 @@ namespace LmsApi.Data
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var logger = serviceProvider.GetRequiredService<ILogger<IdentityRole>>();
 
             string[] roles = { "Admin", "Instructor", "Student" };
 
@@ -38,10 +39,7 @@ namespace LmsApi.Data
                 if (result.Succeeded)
                     await userManager.AddToRoleAsync(user, "Admin");
                 else
-                {
-                    var logger = serviceProvider.GetRequiredService<ILogger<IdentityRole>>();
                     logger.LogError("Failed to create admin user: {Errors}", string.Join(", ", result.Errors.Select(e => e.Description)));
-                }
             }
         }
     }
