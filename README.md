@@ -1,11 +1,11 @@
 # 🎓 Upskeel LMS Backend
 
-[![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white)]
-[![.NET 9](https://img.shields.io/badge/.NET%209-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)]
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)]
-[![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)]
-[![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)]
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)]
+![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white)
+![.NET 9](https://img.shields.io/badge/.NET%209-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 
 ---
 
@@ -13,7 +13,7 @@
 
 **Upskeel** is a **Learning Management System (LMS)**. It provides a secure, scalable platform for course creation, student enrollment, and instructor approval workflows with role-based access control.
 
-[![Upskeel Dashboard](./assets/dashboard.png)]
+![Upskeel Dashboard](./assets/dashboard.png)
 
 ---
 
@@ -52,20 +52,24 @@
 ## 🧱 Tech Stack
 
 ### Backend
-- **Framework:** ASP.NET Core 9 (.NET 9)
-- **Language:** C# 13.0
-- **ORM:** Entity Framework Core
-- **Database:** PostgreSQL
-- **Authentication:** JWT Bearer Tokens
-- **Authorization:** Identity Roles (Admin, Instructor, Student)
+| Layer | Technology |
+|-------|-------------|
+| **Framework** | ASP.NET Core 9 (.NET 9) |
+| **Language** | C# 12 |
+| **ORM** | Entity Framework Core |
+| **Database** | PostgreSQL |
+| **Authentication** | JWT Bearer Tokens |
+| **Authorization** | Identity Roles (Admin, Instructor, Student) |
+| **Testing** | xUnit + WebApplicationFactory |
 - **API Documentation:** Swagger/OpenAPI
 
+
 ### Frontend
-- **Framework:** React 18
-- **Language:** TypeScript
-- **Build Tool:** Vite
-- **Styling:** TailwindCSS
-- **State Management:** React Hooks
+| Layer | Technology |
+|-------|-------------|
+| **Framework** | React 18 |
+| **Language** | TypeScript |
+| **Build Tool** | Vite |
 
 ---
 
@@ -191,19 +195,13 @@ OpenAPI documentation is available at `/swagger` endpoint after starting the bac
 
 ---
 
-## 📜 License
+## License
 
 This project is open source and available under the MIT License.
 
 ---
 
-## 👨‍💻 Author
-
-**Chuma** - [GitHub](https://github.com/chumavii)
-
----
-
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -215,8 +213,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-<div align="center">
+## Author
 
-**Built with ❤️ by [@chumavii](https://github.com/chumavii)**
-
-</div>
+**Chuma**  
+Backend Engineer • Automation Developer • Cloud Enthusiast  
+[GitHub @chumavii](https://github.com/chumavii)
