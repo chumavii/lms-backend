@@ -1,64 +1,228 @@
 # 🎓 Upskeel LMS Backend
 
-**Upskeel** is a full-featured **Learning Management System (LMS)** designed to streamline online education for students, instructors, and administrators.
-Built with **ASP.NET Core** and **React + TypeScript**, it provides a scalable, role-based platform for course creation, enrollment, and instructor approval management.
+<div align="center">
+
+[![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white)](https://learn.microsoft.com/en-us/dotnet/csharp/)
+[![.NET 9](https://img.shields.io/badge/.NET%209-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)](https://jwt.io/)
+[![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
+**A scalable, role-based Learning Management System built with ASP.NET Core and React + TypeScript**
+
+[Live Demo](#-live-urls) • [Setup](#-setup) • [Architecture](#-project-structure) • [Features](#-features)
+
+</div>
+
+---
+
+## 📋 Overview
+
+**Upskeel** is a **Learning Management System (LMS)**. It provides a secure, scalable platform for course creation, student enrollment, and instructor approval workflows with role-based access control.
+
+---
 
 ## 🌐 Live URLs
-- **Frontend:** https://upskeel.vercel.app/login
-- **Backend API:** https://upskeel.up.railway.app
+
+| Environment | URL |
+|---|---|
+| **Frontend** | https://upskeel.vercel.app/login |
+| **Backend API** | https://upskeel.up.railway.app |
+
+---
 
 ## 🚀 Features
-### 👩‍🏫 Instructors
-- Request instructor status and await admin approval.
-- Create and manage courses once approved.
-- View and manage student enrollments.
 
-### 🎓 Students
-- Browse, search, and enroll in available courses.
-- Track learning progress and view enrolled courses.
+### 👩‍🏫 Instructor Features
+- Request instructor status with admin approval workflow
+- Create, edit, and manage courses
+- View enrolled students and track engagement
+- Manage course content and lessons
 
-### 🛠️ Admins
-- Manage users, roles, and account statuses.
-- Approve or deny instructor requests.
-- View, update, or delete any course or user account.
+### 🎓 Student Features
+- Browse and search available courses
+- Enroll in courses
+- Track learning progress
+- View course materials and lessons
+
+### 🛠️ Admin Features
+- User and role management
+- Approve/deny instructor requests
+- Create and manage courses
+- Full CRUD operations on users and courses
+- System monitoring and analytics
+
+---
 
 ## 🧱 Tech Stack
+
 ### Backend
-- ASP.NET Core 9 (C#)
-- Entity Framework Core
-- PostgreSQL (Railway deployment)
-- JWT Authentication & Identity Roles
+- **Framework:** ASP.NET Core 9 (.NET 9)
+- **Language:** C# 13.0
+- **ORM:** Entity Framework Core
+- **Database:** PostgreSQL
+- **Authentication:** JWT Bearer Tokens
+- **Authorization:** Identity Roles (Admin, Instructor, Student)
+- **API Documentation:** Swagger/OpenAPI
 
 ### Frontend
-- React + TypeScript
-- Vite
-- TailwindCSS
+- **Framework:** React 18
+- **Language:** TypeScript
+- **Build Tool:** Vite
+- **Styling:** TailwindCSS
+- **State Management:** React Hooks
+
+---
+
+## 📁 Project Structure
+
+### Backend
+```
+/backend
+  ├── Controllers
+  │   ├── AuthController.cs
+  │   ├── CoursesController.cs
+  │   └── EnrollmentController.cs
+  │   └── InstructorRequestsController.cs
+  ├── Data
+  │   ├── ApplicationDbContext.cs
+  │   └── DbInitializer.cs
+  ├── Migrations
+  ├── Models
+  │   ├── DTOs
+  │   └── Enums
+  │   ├── ApplicationUser.cs
+  │   ├── Course.cs
+  │   └── Enrollment.cs
+  │   └── InstructorAppprovalRequest.cs
+  ├── Properties
+  ├── Services
+  │   ├── EmailService.cs
+  │   └── TokenService.cs
+  └── Program.cs
+```
+
+### Frontend
+```
+/frontend
+  ├── public
+  ├── src
+  │   ├── assets
+  │   ├── components
+  │   ├── hooks
+  │   ├── pages
+  │   ├── services
+  │   ├── store
+  │   └── App.tsx
+  └── index.html
+```
+
+---
 
 ## ⚙️ Setup
-### Backend
-Create `appsettings.json`:
+
+### Prerequisites
+- .NET 9 SDK
+- PostgreSQL 12+
+- Git
+
+### Backend Setup
+
+1. **Clone the repository:**
+
+2. **Create `appsettings.json` in the root directory:**
+
+3. **Install dependencies:**
+```bash
+dotnet restore
+```
+
+4. **Update the database connection string:**
 ```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=lmsdb;Username=postgres;Password=yourpassword"
-  },
-  "Jwt": {
-    "Key": "your-secret-key",
-    "Issuer": "Upskeel",
-    "Audience": "UpskeelUsers"
-  }
+// appsettings.json
+"ConnectionStrings": {
+  "DefaultConnection": "Host=localhost;Database=your_db_name;Username=your_username;Password=your_password"
 }
 ```
 
-Run migrations:
-```
-dotnet ef database update
-```
-
-Start:
-```
+5. **Start the backend:**
+```bash
 dotnet run
 ```
 
+The API will be available at:
+- http://localhost:8080
+- https://localhost:8081
+- Swagger UI: https://localhost:8081/swagger
+
+### Frontend Setup
+
+Refer to the [frontend repository](https://github.com/chumavii/lms-frontend) for React + TypeScript setup instructions.
+
+---
+
+## 🔐 Authentication & Authorization
+
+### JWT Token Flow
+1. User registers via `/api/auth/register`
+2. User logs in via `/api/auth/login`
+3. Backend returns JWT token
+4. Client includes token in `Authorization: Bearer <token>` header
+5. Server validates token and grants access based on roles
+
+### Available Roles
+- **Admin** - Full system access
+- **Instructor** - Create and manage courses (after approval)
+- **Student** - Enroll in courses
+
+---
+
+## 🗄️ Database Schema
+
+### Core Entities
+- **ApplicationUser** - User accounts with identity
+- **Course** - Course information and metadata
+- **Enrollment** - Student-Course relationships
+- **Lesson** - Course lesson content
+- **InstructorApprovalRequest** - Instructor approval workflow
+
+### Relationships
+
+---
+
+## 📄 API Documentation
+
+OpenAPI documentation is available at `/swagger` endpoint after starting the backend server.
+
+---
+
+## 📜 License
+
+This project is open source and available under the MIT License.
+
+---
+
 ## 👨‍💻 Author
-**Chuma**  
+
+**Chuma** - [GitHub](https://github.com/chumavii)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+<div align="center">
+
+**Built with ❤️ by [@chumavii](https://github.com/chumavii)**
+
+</div>
