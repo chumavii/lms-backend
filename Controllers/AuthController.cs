@@ -57,6 +57,7 @@ namespace LmsApi.Controllers
                 {
                     User = user,
                     UserId = user.Id,
+                    Email = user.Email,
                     Status = ApprovalStatus.Pending,
                     RequestedAt = DateTime.UtcNow
                 };
