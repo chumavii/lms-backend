@@ -91,6 +91,7 @@ namespace LmsApi.Controllers
                     FullName = c.User.FullName,
                     CourseId = c.CourseId,
                     Title = c.Course.Title,
+                    Description = c.Course.Description,
                     Progress = c.Progress,
                     CreatedAt = c.CreatedAt,
                     InstructorName = c.Course.Instructor != null ? c.Course.Instructor.FullName : string.Empty,
