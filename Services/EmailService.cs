@@ -18,11 +18,19 @@ namespace LmsApi.Services
             var htmlContent = $"<p>{message}</p>";
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
 
-            var response = await client.SendEmailAsync(msg);
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                throw new Exception($"Failed to send email: {response.StatusCode}");
+                var response = await client.SendEmailAsync(msg);
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Failed to send email: {response.StatusCode}");
+                }
             }
+            catch (Exception ex)
+            {
+                throw new Exception("Error sending email", ex);
+            }
+
         }
     }
 }
