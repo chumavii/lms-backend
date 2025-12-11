@@ -34,7 +34,6 @@ namespace LmsApi.Data
                 b.HasKey(c => c.Id);
 
                 b.Property(c => c.Title).IsRequired().HasMaxLength(200);
-                b.Property(c => c.Status).HasDefaultValue(CourseStatus.Published);
                 
                 b.HasOne(c => c.Instructor)
                 .WithMany(u => u.Courses)

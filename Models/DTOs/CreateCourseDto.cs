@@ -10,6 +10,6 @@ namespace LmsApi.Models.DTOs
         [Required]
         public required string Description { get; set; }
         [Required]
-        public bool IsDraft { get; set; } = false;
+        public bool IsDraft { get; set; } 
     }
 }
