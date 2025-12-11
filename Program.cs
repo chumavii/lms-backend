@@ -3,6 +3,7 @@ using System.Text;
 using LmsApi.Data;
 using LmsApi.Models;
 using LmsApi.Services;
+using LmsApi.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,7 @@ if(String.IsNullOrWhiteSpace(connString)) throw new InvalidOperationException("C
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key is not configured."));
 
 
-// Add services to the container.
+// Services.
 builder.Services.AddDbContext<ApplicationDbContext>(options => 
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -41,6 +42,8 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 });
+
+builder.Services.AddScoped<IRegistrationService, RegistrationService>();
 
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddControllers();
