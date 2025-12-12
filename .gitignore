@@ -63,7 +63,7 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 appsettings.json
-appsettings.*.json
+appsettings*.json
 Properties/launchSettings.json
 
 # ASP.NET Scaffolding
@@ -364,3 +364,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/appsettings.Development.json
