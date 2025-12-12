@@ -43,6 +43,30 @@ namespace LmsApi.Controllers
             return Ok(courses);
         }
 
+        /// <summary>
+        /// Retrieves a list of all draft courses.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("draft")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(typeof(CourseListDto), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<CourseListDto>>> GetDraftCourses()
+        {
+            var draftCourses = await _context.Courses
+                .Include(c => c.Instructor)
+                .Where(c => c.Status == CourseStatus.Draft)
+                .Select(c => new CourseListDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Description = c.Description,
+                    InstructorName = c.Instructor != null ? c.Instructor.FullName : null,
+                    InstructorEmail = c.Instructor != null ? c.Instructor.Email : null,
+                    Status = c.Status
+                }).ToListAsync();
+
+            return Ok(draftCourses);
+        }
 
         /// <summary>
         /// Retrieves the details of a course by its unique identifier.
@@ -85,12 +109,14 @@ namespace LmsApi.Controllers
             if(userId == null)
                 return Unauthorized();
 
+            var courseStatus = model.IsDraft ? CourseStatus.Draft : CourseStatus.Published;
+
             var course = new Course
             {
                 Title = model.Title,
                 Description = model.Description,
                 InstructorId = userId,
-                Status = CourseStatus.Published
+                Status = courseStatus
             };
             
             _context.Courses.Add(course);
@@ -130,7 +156,68 @@ namespace LmsApi.Controllers
             return Ok(new { message = "Course published successfully" });
         }
 
-        
+        /// <summary>
+        /// Retrieves all draft courses created by the authenticated instructor.
+        /// </summary>
+        /// <remarks>This operation is restricted to users with the "Instructor" role.
+        /// Returns only courses with Draft status created by this instructor.</remarks>
+        [HttpGet("my-drafts")]
+        [Authorize(Roles = "Instructor")]
+        [ProducesResponseType(typeof(IEnumerable<CourseListDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<IEnumerable<CourseListDto>>> GetMyDraftCourses()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return Unauthorized();
+
+            var draftCourses = await _context.Courses
+                .Include(c => c.Instructor)
+                .Where(c => c.InstructorId == userId && c.Status == CourseStatus.Draft)
+                .Select(c => new CourseListDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Description = c.Description,
+                    InstructorName = c.Instructor != null ? c.Instructor.FullName : null,
+                    InstructorEmail = c.Instructor != null ? c.Instructor.Email : null,
+                    Status = c.Status
+                }).ToListAsync();
+
+            return Ok(draftCourses);
+        }
+
+        /// <summary>
+        /// Retrieves all courses created by the authenticated instructor.
+        /// </summary>
+        /// <remarks>This operation is restricted to users with the "Instructor" role.
+        /// Returns all courses (both Published and Draft) created by the instructor.</remarks>
+        [HttpGet("my")]
+        [Authorize(Roles = "Instructor")]
+        [ProducesResponseType(typeof(IEnumerable<CourseListDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<IEnumerable<CourseListDto>>> GetMyInstructorCourses()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return Unauthorized();
+
+            var courses = await _context.Courses
+                .Include(c => c.Instructor)
+                .Where(c => c.InstructorId == userId)
+                .Select(c => new CourseListDto
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Description = c.Description,
+                    InstructorName = c.Instructor != null ? c.Instructor.FullName : null,
+                    InstructorEmail = c.Instructor != null ? c.Instructor.Email : null,
+                    Status = c.Status
+                }).ToListAsync();
+
+            return Ok(courses);
+        }
+
         /// <summary>
         /// Reassigns a course to a new instructor.
         /// </summary>
@@ -179,13 +266,13 @@ namespace LmsApi.Controllers
         /// <remarks>This operation requires the caller to be authenticated and authorized with the
         /// "Admin" or "Instructor" role.
         /// </remarks>
-        [HttpPut("{id}")]
+        [HttpPut("update/{id}")]
         [Authorize(Roles = "Admin,Instructor")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateCourse(int id, Course updated)
+        public async Task<IActionResult> UpdateCourse(int id, CreateCourseDto updated)
         {
             var course = await _context.Courses.FindAsync(id);
             if (course == null) 

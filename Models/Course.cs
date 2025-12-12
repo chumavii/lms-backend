@@ -10,7 +10,7 @@ namespace LmsApi.Models
         public required string Title { get; set; }
         public string? Description { get; set; }
         public string? InstructorId { get; set; }
-        public CourseStatus Status { get; set; }
+        public CourseStatus Status { get; set; } = CourseStatus.Draft;
         public ApplicationUser? Instructor { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

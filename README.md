@@ -1,4 +1,4 @@
-# 🎓 Upskeel LMS Backend
+# Upskeel LMS Backend
 
 ![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white)
 ![.NET 9](https://img.shields.io/badge/.NET%209-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
@@ -9,7 +9,7 @@
 
 ---
 
-## 📋 Overview
+## Overview
 
 **Upskeel** is a **Learning Management System (LMS)**. It provides a secure, scalable platform for course creation, student enrollment, and instructor approval workflows with role-based access control.
 
@@ -17,7 +17,7 @@
 
 ---
 
-## 🌐 Live URLs
+## Live URLs
 
 | Environment | URL |
 |---|---|
@@ -26,21 +26,21 @@
 
 ---
 
-## 🚀 Features
+## Features
 
-### 👩‍🏫 Instructor Features
+### Instructor Features
 - Request instructor status with admin approval workflow
 - Create, edit, and manage courses
-- View enrolled students and track engagement
-- Manage course content and lessons
+- View enrolled students 
+- Manage course content
 
-### 🎓 Student Features
+### Student Features
 - Browse and search available courses
 - Enroll in courses
 - Track learning progress
 - View course materials and lessons
 
-### 🛠️ Admin Features
+### Admin Features
 - User and role management
 - Approve/deny instructor requests
 - Create and manage courses
@@ -49,7 +49,7 @@
 
 ---
 
-## 🧱 Tech Stack
+## Tech Stack
 
 ### Backend
 | Layer | Technology |
@@ -61,7 +61,7 @@
 | **Authentication** | JWT Bearer Tokens |
 | **Authorization** | Identity Roles (Admin, Instructor, Student) |
 | **Testing** | xUnit + WebApplicationFactory |
-| **API Documentatio:** | Swagger/OpenAPI |
+| **API Documentation** | Swagger/OpenAPI |
 
 
 ### Frontend
@@ -73,7 +73,7 @@
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ### Backend
 ```
@@ -96,8 +96,11 @@
   │   └── InstructorAppprovalRequest.cs
   ├── Properties
   ├── Services
+  │   ├── Interfaces
+  │	  │		└── RegistrationService.cs
   │   ├── EmailService.cs
   │   └── TokenService.cs
+  │   └── RegistrationService.cs
   └── Program.cs
 ```
 
@@ -118,7 +121,7 @@
 
 ---
 
-## ⚙️ Setup
+## Setup
 
 ### Prerequisites
 - .NET 9 SDK
@@ -160,7 +163,7 @@ Refer to the [frontend repository](https://github.com/chumavii/lms-frontend) for
 
 ---
 
-## 🔐 Authentication & Authorization
+## Authentication & Authorization
 
 ### JWT Token Flow
 1. User registers via `/api/auth/register`
@@ -176,7 +179,7 @@ Refer to the [frontend repository](https://github.com/chumavii/lms-frontend) for
 
 ---
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### Core Entities
 - **ApplicationUser** - User accounts with identity
@@ -189,7 +192,7 @@ Refer to the [frontend repository](https://github.com/chumavii/lms-frontend) for
 
 ---
 
-## 📄 API Documentation
+## API Documentation
 
 OpenAPI documentation is available at `/swagger` endpoint after starting the backend server.
 
@@ -216,5 +219,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Author
 
 **Chuma**  
-Backend Engineer • Automation Developer • Cloud Enthusiast  
-[GitHub @chumavii](https://github.com/chumavii)
+Backend Engineer • [GitHub @chumavii](https://github.com/chumavii)

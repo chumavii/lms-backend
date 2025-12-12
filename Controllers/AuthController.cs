@@ -3,10 +3,10 @@ using LmsApi.Models;
 using LmsApi.Models.DTOs;
 using LmsApi.Models.Enums;
 using LmsApi.Services;
+using LmsApi.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
@@ -14,7 +14,7 @@ namespace LmsApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController (ApplicationDbContext context, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager, TokenService tokenService, EmailService emailService, IConfiguration config) : ControllerBase
+    public class AuthController (ApplicationDbContext context, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager, TokenService tokenService, EmailService emailService, IConfiguration config, IRegistrationService register) : ControllerBase
     {
         private readonly ApplicationDbContext _context = context;
         private readonly UserManager<ApplicationUser> _userManager = userManager;
@@ -23,61 +23,37 @@ namespace LmsApi.Controllers
         private readonly TokenService _tokenService = tokenService;
         private readonly EmailService _emailService = emailService;
         private readonly IConfiguration _config = config;
+        private readonly IRegistrationService _register = register;
 
         /// <summary>
         /// Registers a new user with the specified details and assigns the appropriate role.
         /// </summary>
         /// <param name="model">The registration details provided by the user, including email, password, full name, and role.</param>
         [HttpPost("register")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(RegisterDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var isInstructor = model.Role == "Instructor";
-            var user = new ApplicationUser
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            try
             {
-                Email = model.Email,
-                UserName = model.Email,
-                FullName = model.FullName,
-                IsApproved = !isInstructor
-            };
-
-            //Check role is valid using roles in Db
-            if (!await _roleManager.RoleExistsAsync(model.Role))
-                return BadRequest("InvalidRole");
-
-            var result = await _userManager.CreateAsync(user, model.Password);
-            if (!result.Succeeded)
-                return BadRequest(result.Errors);
-
-            //User needs to be assigned a role after creation
-            if (!await _userManager.IsInRoleAsync(user, model.Role))
-                await _userManager.AddToRoleAsync(user, model.Role);
-
-            if (isInstructor)
-            {
-                var approvalRequest = new InstructorApprovalRequest
+                var result = await _register.RegisterAsync(model, baseUrl);
+                if (result == null)
+                    return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occured");
+                if (result.IsFailure)
                 {
-                    User = user,
-                    UserId = user.Id,
-                    Email = user.Email,
-                    Status = ApprovalStatus.Pending,
-                    RequestedAt = DateTime.UtcNow
-                };
-                _context.InstructorApprovalRequests.Add(approvalRequest);
-                await _context.SaveChangesAsync();
+                    if (result.IsFailure.Equals("Invalid role"))
+                        return BadRequest("Invalid role");
+                    return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occured");
+                }
+
+                return Ok(new { message = "Registration successful" });
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occured");
             }
 
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var confirmationLink = Url.Action(nameof(ConfirmEmail), "Auth",
-                new { userId = user.Id, token }, Request.Scheme);
-
-            await _emailService.SendEmail(user.Email, "Confirm your Upskeel account", $"Click here to confirm: {confirmationLink}");
-
-            return Ok(new { message = "Registration successful" });
         }
 
         /// <summary>
